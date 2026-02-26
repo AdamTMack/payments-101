@@ -1,0 +1,114 @@
+/* === Tablet (max-width: 1024px) === */
+@media (max-width: 1024px) {
+  #diagram-container {
+    padding: 0.25rem 0.75rem;
+  }
+
+  #diagram-container.expanded {
+    padding: 0.5rem 1rem 0.75rem;
+  }
+
+  #diagram-container svg {
+    width: 70%;
+  }
+
+  #diagram-container.expanded svg {
+    width: 98%;
+  }
+
+  #detail-panel {
+    width: 340px;
+  }
+}
+
+/* === Mobile (max-width: 768px) === */
+@media (max-width: 768px) {
+  main {
+    padding: 0 var(--space-sm);
+  }
+
+  /* Hide fixed diagram on mobile — too small to be useful */
+  #diagram-container {
+    display: none;
+  }
+
+  .scroll-step {
+    min-height: auto;
+    padding: var(--space-md) 0;
+  }
+
+  /* Detail panel becomes bottom sheet */
+  #detail-panel {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 70vh;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    transform: translateY(100%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  #detail-panel.open {
+    transform: translateY(0);
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scenario-cards {
+    grid-template-columns: 1fr;
+  }
+
+  #toc-toggle {
+    bottom: 1.5rem;
+    right: 1rem;
+  }
+
+  #toc-menu {
+    bottom: 4rem;
+    right: 1rem;
+    min-width: 220px;
+  }
+
+  .step-number {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+  }
+
+  .scenario-card::before,
+  .scenario-card::after,
+  .comparison-card::before,
+  .comparison-card::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .inline-diagram {
+    display: block;
+  }
+}
+
+/* === Small Mobile (max-width: 480px) === */
+@media (max-width: 480px) {
+  #hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .step-number {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}

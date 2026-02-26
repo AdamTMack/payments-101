@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Payment Processing 101</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/diagram.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <main>
+    <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="inline-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M 0 1 L 6 4 L 0 7 z" fill="var(--color-diagram-default)"/>
+        </marker>
+      </defs>
+    </svg>
+
+    <section id="hero">
+      <div class="hero-content">
+        <h1>Payment Processing 101</h1>
+        <p class="hero-subtitle">How does any of this work?!</p>
+        <p class="hero-intro">You go to a store and tap your card to pay. Two seconds later, it's approved. But what actually happened in those two seconds? Let's trace the entire journey — from tap to settlement — and meet every player involved.</p>
+        <div class="hero-scroll-cue">
+          <span>Scroll to begin</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <div id="diagram-container" class="hidden">
+      <span id="diagram-title" class="diagram-title"></span>
+      <button class="diagram-close" aria-label="Close expanded diagram">&times;</button>
+      <svg viewBox="0 0 960 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Payment processing flow diagram">
+        <defs>
+          <marker id="arrow-auth" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--color-diagram-default)"/>
+          </marker>
+          <marker id="arrow-settlement" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--color-diagram-default)"/>
+          </marker>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+            <feFlood flood-color="#0f7fba" flood-opacity="0.3" result="color"/>
+            <feComposite in="color" in2="blur" operator="in" result="glow"/>
+            <feMerge>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Platform overlays (behind everything) -->
+        <g class="platform-overlay" data-platform="adyen">
+          <rect x="320" y="20" width="300" height="230" rx="12"/>
+        </g>
+        <g class="platform-overlay" data-platform="stripe">
+          <rect x="320" y="20" width="300" height="230" rx="12"/>
+        </g>
+        <g class="platform-overlay" data-platform="square">
+          <rect x="320" y="20" width="300" height="230" rx="12"/>
+        </g>
+
+        <!-- Auth forward paths -->
+        <path class="diagram-path auth-path" data-path="customer-to-business" d="M 140 57 L 168 57" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="business-to-gateway" d="M 290 57 L 328 57" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="gateway-to-processor" d="M 450 57 L 488 57" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="processor-to-acquirer" d="M 550 85 L 550 168" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="acquirer-to-card-network" d="M 610 182 L 648 68" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="card-network-to-issuer" d="M 770 57 L 808 57" marker-end="url(#arrow-auth)"/>
+
+        <!-- Auth response paths (offset slightly) -->
+        <path class="diagram-path auth-path" data-path="issuer-to-card-network" d="M 810 65 L 772 65" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="card-network-to-acquirer" d="M 654 74 L 616 190" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="acquirer-to-processor" d="M 542 170 L 542 87" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="processor-to-gateway" d="M 490 65 L 452 65" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="gateway-to-business" d="M 330 65 L 292 65" marker-end="url(#arrow-auth)"/>
+        <path class="diagram-path auth-path" data-path="business-to-customer" d="M 170 65 L 142 65" marker-end="url(#arrow-auth)"/>
+
+        <!-- Settlement paths (dashed) -->
+        <path class="diagram-path settlement-path" d="M 870 85 L 870 145 L 615 145 L 615 170" marker-end="url(#arrow-settlement)"/>
+        <path class="diagram-path settlement-path" d="M 490 197 L 292 197" marker-end="url(#arrow-settlement)"/>
+
+        <!-- Top row nodes -->
+        <g class="diagram-node" data-player="customer">
+          <rect x="20" y="30" width="120" height="55" rx="8"/>
+          <circle cx="80" cy="44" r="6" class="node-icon"/>
+          <path d="M 68 62 C 68 52 92 52 92 62" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="2"/>
+          <text x="80" y="72">Customer</text>
+        </g>
+
+        <g class="diagram-node" data-player="business">
+          <rect x="170" y="30" width="120" height="55" rx="8"/>
+          <path d="M 218 44 L 230 36 L 242 44" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="2"/>
+          <rect x="220" y="44" width="20" height="14" rx="2" class="node-icon"/>
+          <text x="230" y="72">Business</text>
+        </g>
+
+        <g class="diagram-node" data-player="gateway">
+          <rect x="330" y="30" width="120" height="55" rx="8"/>
+          <path d="M 390 36 L 400 31 L 410 36 L 410 54 Q 400 61 390 54 Z" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <text x="390" y="72">Gateway</text>
+        </g>
+
+        <g class="diagram-node" data-player="processor">
+          <rect x="490" y="30" width="120" height="55" rx="8"/>
+          <circle cx="550" cy="48" r="10" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <circle cx="550" cy="48" r="3" class="node-icon"/>
+          <text x="550" y="72">Processor</text>
+        </g>
+
+        <g class="diagram-node" data-player="card-network">
+          <rect x="650" y="30" width="120" height="55" rx="8"/>
+          <circle cx="710" cy="48" r="10" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="700" y1="48" x2="720" y2="48" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="710" y1="38" x2="710" y2="58" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <text x="710" y="72">Card Network</text>
+        </g>
+
+        <g class="diagram-node" data-player="issuer">
+          <rect x="810" y="30" width="120" height="55" rx="8"/>
+          <path d="M 855 61 L 855 48 L 870 40 L 885 48 L 885 61 Z" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="863" y1="48" x2="863" y2="61" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="877" y1="48" x2="877" y2="61" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <text x="870" y="72">Issuer</text>
+        </g>
+
+        <!-- Bottom row nodes -->
+        <g class="diagram-node" data-player="business-bank">
+          <rect x="170" y="170" width="120" height="55" rx="8"/>
+          <path d="M 215 204 L 215 191 L 230 183 L 245 191 L 245 204 Z" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <text x="230" y="194" class="node-icon" font-size="8" font-weight="700" text-anchor="middle" dominant-baseline="central">$</text>
+          <text x="230" y="215">Business Bank</text>
+        </g>
+
+        <g class="diagram-node" data-player="acquirer">
+          <rect x="490" y="170" width="120" height="55" rx="8"/>
+          <path d="M 535 204 L 535 191 L 550 183 L 565 191 L 565 204 Z" class="node-icon" fill="none" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="543" y1="191" x2="543" y2="204" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <line x1="557" y1="191" x2="557" y2="204" class="node-icon" stroke="var(--color-diagram-default)" stroke-width="1.5"/>
+          <text x="550" y="215">Acquirer</text>
+        </g>
+      </svg>
+    </div>
+
+    <section id="players">
+      <h2>The Players</h2>
+
+      <div class="callout-card reveal">
+        <p><strong>A note on terminology:</strong> Many of these terms are used interchangeably in casual conversation, which causes confusion. We'll define each one precisely — and call out the common aliases — so you always know who's who.</p>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-customer">
+        <div class="step-content">
+          <h3>Customer</h3>
+          <p>The person purchasing goods, services, or digital entitlements from a Business. They need to provide payment using a form of payment like a credit card or bank account.</p>
+          <p class="terminology-note">Sometimes called the <strong>Cardholder</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 200 50">
+              <g class="inline-node inline-active" data-player="customer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Customer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node" data-player="business"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Business</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-business">
+        <div class="step-content">
+          <h3>Business</h3>
+          <p>The legal entity selling goods, services, or digital entitlements to the Customer. They need to receive payment from the Customer in order to fulfill their order.</p>
+          <p class="terminology-note">Sometimes called the <strong>Merchant</strong>, <strong>Seller</strong>, or <strong>Vendor</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="customer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Customer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Business</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node" data-player="gateway"><rect x="230" y="8" width="80" height="34"/><text x="270" y="29">Gateway</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-business-bank">
+        <div class="step-content">
+          <h3>Business Bank Account</h3>
+          <p>When the Customer pays the Business, the funds ultimately need to be deposited into a bank account owned by the Business. This is where the money actually lands after the entire payment process completes.</p>
+          <p class="terminology-note">Sometimes called the <strong>Merchant Account</strong> or <strong>Settlement Account</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="business"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Business</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business-bank"><rect x="116" y="8" width="100" height="34"/><text x="166" y="29">Business Bank</text></g>
+              <line class="inline-arrow" x1="248" y1="25" x2="218" y2="25"/>
+              <g class="inline-node" data-player="acquirer"><rect x="250" y="8" width="80" height="34"/><text x="290" y="29">Acquirer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-gateway">
+        <div class="step-content">
+          <h3>Payment Gateway</h3>
+          <p>A service that securely captures and transmits payment information from the point-of-sale system or checkout interface to the payment processor. It handles encryption and security of sensitive card data during transmission.</p>
+          <p>The gateway provides the payment surfaces that customers interact with — physical terminals, online checkout forms, and in-app payment screens.</p>
+          <p class="terminology-note">Sometimes called the <strong>Gateway Provider</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="business"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Business</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="gateway"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Gateway</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node" data-player="processor"><rect x="230" y="8" width="80" height="34"/><text x="270" y="29">Processor</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-processor">
+        <div class="step-content">
+          <h3>Payment Processor</h3>
+          <p>A service that handles the technical aspects of the transaction — validating payment information, obtaining authorization from the issuing bank, and managing communication between the acquiring and issuing banks.</p>
+          <p class="terminology-note">Sometimes called the <strong>Payment Service Provider (PSP)</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="gateway"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Gateway</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="processor"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Processor</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node" data-player="acquirer"><rect x="230" y="8" width="80" height="34"/><text x="270" y="29">Acquirer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-acquirer">
+        <div class="step-content">
+          <h3>Acquiring Bank</h3>
+          <p>The financial institution that holds the merchant's acquiring account, receives payments on its behalf, processes each transaction, and settles the funds into the merchant's Business Bank Account.</p>
+          <p class="terminology-note">Sometimes called the <strong>Acquirer</strong> or <strong>Merchant Bank</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 400 50">
+              <g class="inline-node" data-player="processor"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Processor</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="acquirer"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Acquirer</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node" data-player="card-network"><rect x="230" y="8" width="100" height="34"/><text x="280" y="29">Card Network</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-card-network">
+        <div class="step-content">
+          <h3>Card Network</h3>
+          <p>Organizations that establish the rules, standards, and infrastructure for processing transactions using their branded payment instruments. They operate the rails that connect acquiring banks to issuing banks worldwide.</p>
+          <p class="terminology-note">Sometimes called the <strong>Card Scheme</strong> or <strong>Card Brand</strong> (Visa, Mastercard, Amex, Discover).</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 380 50">
+              <g class="inline-node" data-player="acquirer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Acquirer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="card-network"><rect x="116" y="8" width="100" height="34"/><text x="166" y="29">Card Network</text></g>
+              <line class="inline-arrow" x1="218" y1="25" x2="248" y2="25"/>
+              <g class="inline-node" data-player="issuer"><rect x="250" y="8" width="80" height="34"/><text x="290" y="29">Issuer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="player-issuer">
+        <div class="step-content">
+          <h3>Customer's Bank (Issuer)</h3>
+          <p>The financial institution that issued the payment card to the customer. They are responsible for authorizing or declining the transaction based on the customer's account status, available funds, fraud indicators, and other risk factors.</p>
+          <p class="terminology-note">Sometimes called the <strong>Issuing Bank</strong>, <strong>Issuer</strong>, or <strong>Card Issuer</strong>.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 240 50">
+              <g class="inline-node" data-player="card-network"><rect x="2" y="8" width="100" height="34"/><text x="52" y="29">Card Network</text></g>
+              <line class="inline-arrow" x1="104" y1="25" x2="134" y2="25"/>
+              <g class="inline-node inline-active" data-player="issuer"><rect x="136" y="8" width="80" height="34"/><text x="176" y="29">Issuer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lifecycle">
+      <h2>Transaction Lifecycle</h2>
+      <p class="section-intro">Now that we know the players, let's trace what happens when a customer taps their card. Nine steps, from intent to settlement.</p>
+
+      <div class="scroll-step reveal" data-step="lifecycle-1">
+        <div class="step-content">
+          <span class="step-number">Step 1</span>
+          <h3>The Customer Decides to Buy</h3>
+          <p>The Customer has decided to make a purchase from the Business. Time to pay.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 200 50">
+              <g class="inline-node inline-active" data-player="customer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Customer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Business</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-2">
+        <div class="step-content">
+          <span class="step-number">Step 2</span>
+          <h3>Payment Details Reach the Gateway</h3>
+          <p>The Customer presents their card at a payment surface — a physical terminal, online checkout form, or in-app screen. The payment details are securely transmitted to the Payment Gateway.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="customer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Customer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Business</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node inline-active" data-player="gateway"><rect x="230" y="8" width="80" height="34"/><text x="270" y="29">Gateway</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-3">
+        <div class="step-content">
+          <span class="step-number">Step 3</span>
+          <h3>Gateway Encrypts and Forwards</h3>
+          <p>The Gateway encrypts the card data, tokenizes it for security, and transforms it into a standard authorization request. This request is forwarded to the Payment Processor.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 200 50">
+              <g class="inline-node inline-active" data-player="gateway"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Gateway</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="processor"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Processor</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-4">
+        <div class="step-content">
+          <span class="step-number">Step 4</span>
+          <h3>Processor Routes to the Network</h3>
+          <p>The Processor validates the request, determines the correct card network based on the card's BIN (Bank Identification Number), and forwards the request through the Acquiring Bank to the Card Network.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 400 50">
+              <g class="inline-node inline-active" data-player="processor"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Processor</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="acquirer"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Acquirer</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node inline-active" data-player="card-network"><rect x="230" y="8" width="100" height="34"/><text x="280" y="29">Card Network</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-5">
+        <div class="step-content">
+          <span class="step-number">Step 5</span>
+          <h3>Card Network Reaches the Issuer</h3>
+          <p>The Card Network validates the transaction against its rules and routes it to the Customer's Issuing Bank. The Issuer checks: Does the customer have sufficient funds? Are there fraud indicators? Is the card active?</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 240 50">
+              <g class="inline-node inline-active" data-player="card-network"><rect x="2" y="8" width="100" height="34"/><text x="52" y="29">Card Network</text></g>
+              <line class="inline-arrow" x1="104" y1="25" x2="134" y2="25"/>
+              <g class="inline-node inline-active" data-player="issuer"><rect x="136" y="8" width="80" height="34"/><text x="176" y="29">Issuer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-6">
+        <div class="step-content">
+          <span class="step-number">Step 6</span>
+          <h3>Authorization Response Travels Back</h3>
+          <p>The Issuing Bank sends an authorization response — approved or declined — back through the same chain: Card Network, Acquiring Bank, Processor, Gateway.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 320 50">
+              <g class="inline-node inline-active" data-player="issuer"><rect x="2" y="8" width="60" height="34"/><text x="32" y="29">Issuer</text></g>
+              <line class="inline-arrow" x1="64" y1="25" x2="74" y2="25"/>
+              <g class="inline-node" data-player="card-network"><rect x="76" y="8" width="60" height="34"/><text x="106" y="29">Network</text></g>
+              <line class="inline-arrow" x1="138" y1="25" x2="148" y2="25"/>
+              <g class="inline-node" data-player="processor"><rect x="150" y="8" width="60" height="34"/><text x="180" y="29">Processor</text></g>
+              <line class="inline-arrow" x1="212" y1="25" x2="222" y2="25"/>
+              <g class="inline-node inline-active" data-player="gateway"><rect x="224" y="8" width="60" height="34"/><text x="254" y="29">Gateway</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-7">
+        <div class="step-content">
+          <span class="step-number">Step 7</span>
+          <h3>Customer Sees the Result</h3>
+          <p>The Gateway informs the Business and the Customer of the outcome. If approved, the transaction is complete from the customer's perspective. The receipt prints. The door unlocks. The download begins.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 360 50">
+              <g class="inline-node" data-player="gateway"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Gateway</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business"><rect x="116" y="8" width="80" height="34"/><text x="156" y="29">Business</text></g>
+              <line class="inline-arrow" x1="198" y1="25" x2="228" y2="25"/>
+              <g class="inline-node inline-active" data-player="customer"><rect x="230" y="8" width="80" height="34"/><text x="270" y="29">Customer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout-card callout-highlight reveal">
+        <p><strong>All of this happens in about 2 seconds.</strong> Steps 1-7 — from tapping your card to seeing "Approved" — is the authorization flow. It's near-instant. Settlement (steps 8-9) is a completely separate process that happens later, in batch, and takes 1-3 business days.</p>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-8">
+        <div class="step-content">
+          <span class="step-number">Step 8</span>
+          <h3>Settlement Begins</h3>
+          <p>At the end of each business day, approved transactions are batched together. The Issuing Bank transfers the funds through the Card Network to the Acquiring Bank. This is the settlement process — the dashed line on our diagram.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 380 50">
+              <g class="inline-node inline-active" data-player="issuer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Issuer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="card-network"><rect x="116" y="8" width="100" height="34"/><text x="166" y="29">Card Network</text></g>
+              <line class="inline-arrow" x1="218" y1="25" x2="248" y2="25"/>
+              <g class="inline-node inline-active" data-player="acquirer"><rect x="250" y="8" width="80" height="34"/><text x="290" y="29">Acquirer</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="lifecycle-9">
+        <div class="step-content">
+          <span class="step-number">Step 9</span>
+          <h3>Funds Arrive at the Business</h3>
+          <p>The Acquiring Bank deposits the settled funds (minus fees) into the Business's Bank Account. The Business reconciles the deposit against their transaction records. The cycle is complete.</p>
+          <div class="inline-diagram">
+            <svg viewBox="0 0 240 50">
+              <g class="inline-node inline-active" data-player="acquirer"><rect x="2" y="8" width="80" height="34"/><text x="42" y="29">Acquirer</text></g>
+              <line class="inline-arrow" x1="84" y1="25" x2="114" y2="25"/>
+              <g class="inline-node inline-active" data-player="business-bank"><rect x="116" y="8" width="100" height="34"/><text x="166" y="29">Business Bank</text></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="auth-capture-settlement">
+      <h2>Authorization vs. Capture vs. Settlement</h2>
+      <p class="section-intro">We just saw the full lifecycle, but there's a critical nuance hiding inside it. What most people think of as "paying" is actually three distinct events.</p>
+
+      <div class="scroll-step reveal" data-step="acs-auth">
+        <div class="step-content">
+          <span class="step-number">Authorization</span>
+          <h3>"Can the customer pay?"</h3>
+          <p>Authorization is the real-time check we just traced. The issuing bank confirms the customer has sufficient funds and no fraud flags. If approved, the funds are <strong>held</strong> — reserved on the customer's account — but not transferred anywhere.</p>
+          <div class="callout-card callout-highlight reveal">
+            <p><strong>Approved does not mean paid.</strong> Funds are held, not transferred, at authorization. This is one of the most common misunderstandings in payments.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="acs-capture">
+        <div class="step-content">
+          <span class="step-number">Capture</span>
+          <h3>"We're ready to collect."</h3>
+          <p>Capture is the merchant signaling that the transaction should be finalized. In many cases this happens automatically at the same time as authorization. But not always — and the gap between auth and capture is where things get interesting.</p>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="acs-settlement">
+        <div class="step-content">
+          <span class="step-number">Settlement</span>
+          <h3>"Move the actual money."</h3>
+          <p>Settlement is the batch process where funds actually transfer between banks. It happens at the end of each business day and typically takes 1-3 business days to complete. This is the dashed-line path on our diagram.</p>
+        </div>
+      </div>
+
+      <h3>Why the distinction matters</h3>
+      <div class="scenario-cards reveal-stagger">
+        <div class="scenario-card reveal">
+          <div class="scenario-icon">&#127976;</div>
+          <h4>Hotels</h4>
+          <p>Authorization for estimated stay amount at check-in. Capture for the actual total at checkout — which might be higher (minibar) or lower (early departure).</p>
+        </div>
+        <div class="scenario-card reveal">
+          <div class="scenario-icon">&#127861;</div>
+          <h4>Restaurants</h4>
+          <p>Authorization for the meal total when you hand over your card. Capture for the final amount after you add a tip on the receipt.</p>
+        </div>
+        <div class="scenario-card reveal">
+          <div class="scenario-icon">&#128230;</div>
+          <h4>Pre-orders</h4>
+          <p>Authorization when the order is placed. Capture only when the item actually ships — which might be weeks or months later.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="card-present">
+      <h2>Card Present vs. Card Not Present</h2>
+      <p class="section-intro">How do payment details get into the payment gateway? There are two fundamentally different paths — and the distinction has major implications for cost, fraud, and integration.</p>
+
+      <div class="comparison-grid reveal-stagger">
+        <div class="comparison-card reveal">
+          <span class="label">Card Present</span>
+          <h3>Physical interaction</h3>
+          <p>The customer's card is physically at the point of sale. A terminal reads the chip, NFC tap, or magstripe.</p>
+          <ul class="comparison-traits">
+            <li class="trait-positive">Lower fraud risk</li>
+            <li class="trait-positive">Lower interchange rates</li>
+            <li>Physical terminal required</li>
+          </ul>
+        </div>
+        <div class="comparison-card reveal">
+          <span class="label">Card Not Present</span>
+          <h3>Remote transaction</h3>
+          <p>Online checkout, in-app payments, mail order / telephone order (MOTO). The card is not physically present.</p>
+          <ul class="comparison-traits">
+            <li class="trait-negative">Higher fraud risk</li>
+            <li class="trait-negative">Higher interchange rates</li>
+            <li>Software integration required</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout-card reveal">
+        <p><strong>Why this matters commercially:</strong> The distinction affects fraud liability, integration patterns, and compliance requirements. Card-not-present transactions carry higher interchange fees precisely because the fraud risk is higher — there's no physical card to verify.</p>
+      </div>
+    </section>
+
+    <section id="fees">
+      <h2>Where the Fees Come From</h2>
+      <p class="section-intro">Every card transaction involves multiple parties, and each one takes a cut. Understanding the fee structure is essential because platform choice has real cost implications at scale.</p>
+
+      <div class="fee-stack">
+        <div class="fee-layer reveal" data-fee="interchange">
+          <div class="fee-bar">
+            <span class="fee-label">Interchange</span>
+            <span class="fee-pct">~1.5–2.5%</span>
+          </div>
+          <p class="fee-desc">Set by card networks, paid by the acquirer to the issuing bank. The largest component. Varies by card type, merchant category, and transaction type.</p>
+        </div>
+        <div class="fee-layer reveal" data-fee="assessment">
+          <div class="fee-bar">
+            <span class="fee-label">Assessment / Scheme Fees</span>
+            <span class="fee-pct">~0.13–0.15%</span>
+          </div>
+          <p class="fee-desc">Paid to the card network (Visa, Mastercard) for using their rails. Small but non-negotiable.</p>
+        </div>
+        <div class="fee-layer reveal" data-fee="processor">
+          <div class="fee-bar">
+            <span class="fee-label">Processor / Acquirer Markup</span>
+            <span class="fee-pct">varies</span>
+          </div>
+          <p class="fee-desc">The margin charged by your payment provider on top of interchange and assessments. This is the negotiable part.</p>
+        </div>
+      </div>
+
+      <h3>Blended vs. Interchange++</h3>
+      <div class="comparison-grid reveal-stagger">
+        <div class="comparison-card reveal">
+          <span class="label">Blended Pricing</span>
+          <h4>Stripe: 2.9% + 30&#162;</h4>
+          <p>One flat rate regardless of card type or transaction. Simple to understand. The provider absorbs the variability of interchange and keeps the spread.</p>
+        </div>
+        <div class="comparison-card reveal">
+          <span class="label">Interchange++</span>
+          <h4>Adyen: Interchange + Scheme + Markup</h4>
+          <p>You see the actual interchange cost plus a transparent, fixed markup. More complex to read, but gives full visibility into what you're paying and why.</p>
+        </div>
+      </div>
+
+      <div class="callout-card callout-highlight reveal">
+        <p><strong>Why this matters:</strong> A 20 basis point difference on $50M in annual volume is $100,000. At scale, the choice between blended and interchange++ pricing &#8212; and the platform that offers each &#8212; has real financial impact.</p>
+      </div>
+    </section>
+
+    <section id="modern-platforms">
+      <h2>The Modern Payment Platform</h2>
+      <p class="section-intro">Here's where it gets interesting. Companies like Adyen, Stripe, and Square have collapsed multiple roles in our diagram into a single provider.</p>
+
+      <div class="scroll-step reveal" data-step="platform-adyen">
+        <div class="step-content">
+          <h3>Adyen</h3>
+          <p>Serves simultaneously as Gateway, Processor, and Acquirer in most regions. Adyen holds direct acquiring licenses in 40+ countries, meaning they can process transactions locally rather than routing through third-party acquirers.</p>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="platform-stripe">
+        <div class="step-content">
+          <h3>Stripe</h3>
+          <p>Plays a very similar role: acting as Gateway, Processor, and Acquirer in most regions. Stripe's strength is its developer-first approach and the speed of integration.</p>
+        </div>
+      </div>
+
+      <div class="scroll-step reveal" data-step="platform-square">
+        <div class="step-content">
+          <h3>Square</h3>
+          <p>Also performs the same three jobs: Gateway, Processor, and Acquirer. Square's historical strength is in card-present payments for small and medium businesses.</p>
+        </div>
+      </div>
+
+      <div class="callout-card reveal">
+        <p><strong>The value proposition:</strong> One integration, one relationship, one dashboard, simplified compliance. <strong>The tradeoff:</strong> Vendor lock-in, less flexibility, and fewer negotiation levers on pricing.</p>
+      </div>
+
+      <div class="module-teaser reveal">
+        <p>So if they all do the same three jobs, why does it matter which one you pick?</p>
+        <p class="teaser-hint">That's Module 2. &#8594;</p>
+      </div>
+    </section>
+
+    <section id="site-footer">
+      <footer class="site-footer">
+        <p class="footer-text">Payment Processing 101 &#8212; An educational guide</p>
+        <p class="footer-cta"><a href="#">Get in touch &#8594;</a></p>
+      </footer>
+    </section>
+  </main>
+
+  <button id="toc-toggle" aria-label="Table of contents">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="4" x2="15" y2="4"/>
+      <line x1="3" y1="9" x2="15" y2="9"/>
+      <line x1="3" y1="14" x2="12" y2="14"/>
+    </svg>
+  </button>
+  <nav id="toc-menu" class="toc-hidden">
+    <a href="#players" data-section="players">The Players</a>
+    <a href="#lifecycle" data-section="lifecycle">Transaction Lifecycle</a>
+    <a href="#auth-capture-settlement" data-section="auth-capture-settlement">Auth vs. Capture vs. Settlement</a>
+    <a href="#card-present" data-section="card-present">Card Present vs. CNP</a>
+    <a href="#fees" data-section="fees">Where Fees Come From</a>
+    <a href="#modern-platforms" data-section="modern-platforms">Modern Platforms</a>
+  </nav>
+
+  <div id="detail-panel-overlay"></div>
+  <div id="detail-panel">
+    <button class="panel-close" aria-label="Close panel">&times;</button>
+    <div class="panel-title" id="panel-title"></div>
+    <div class="panel-aliases" id="panel-aliases"></div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+
+  <script src="js/scroll-manager.js" defer></script>
+  <script src="js/diagram.js" defer></script>
+  <script src="js/detail-panel.js" defer></script>
+  <script src="js/toc.js" defer></script>
+</body>
+</html>
